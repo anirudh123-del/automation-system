@@ -1,0 +1,45 @@
+import linkedin
+from linkedin import server
+
+# Set up API credentials
+API_KEY = 'your_api_key'
+API_SECRET = 'your_api_secret'
+USER_TOKEN = 'your_user_token'
+USER_SECRET = 'your_user_secret'
+
+# Create a LinkedIn API client
+authentication = linkedin.LinkedInDeveloperAuthentication(API_KEY, API_SECRET, USER_TOKEN, USER_SECRET, '', linkedin.PERMISSIONS.enums.values())
+application = server.quick_api(authentication)
+
+# Define search parameters
+search_params = {
+    'keywords': 'decision maker',
+    'location': 'your_location',
+    'industry': 'your_industry'
+}
+
+# Search for new connections
+search_results = application.search_profile(selectors=[{'people': ['first-name', 'last-name', 'public-profile-url']}], params=search_params)
+
+# Iterate over search results and retrieve profiles
+for person in search_results['people']['values']:
+    # Get the profile URL
+    profile_url = person['publicProfileUrl']
+
+    # Retrieve the full profile data
+    profile = application.get_profile(member_url=profile_url)
+
+    # Extract information from the profile
+    first_name = profile['firstName']
+    last_name = profile['lastName']
+    about = profile.get('summary', '')
+    job_title = profile.get('headline', '')
+
+    # Generate personalized connection request
+    connection_request = f"Hi {first_name}, I came across your profile and noticed your impressive background as a {job_title}. I believe we share similar interests in {your_field}, and I'd love to connect and explore potential opportunities. Looking forward to connecting with you. Best regards, Your Name"
+
+    # Send connection request
+    application.send_invitation(profile_url=profile_url, text=connection_request)
+
+    # Add a delay to avoid API rate limits
+    time.sleep(1)
